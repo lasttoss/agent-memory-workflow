@@ -1,0 +1,29 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  go:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # The toolchain comes from go.mod rather than from a version typed into two files.
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - run: test -z "$(gofmt -l .)"
+      - run: go vet ./...
+      # The tests are the point of this package: the secrets are fabricated, the false positives are the
+      # interesting half, and idempotency is asserted because a memory page is rewritten.
+      - run: go test -race -count=1 ./...
+      - run: go build ./...
+      # A redactor that is not applied is a redactor that does not exist: the repository is also checked for
+      # the shape of a real credential, including in its own history from here on.
+      - name: no credential shape in the tree
+        run: |
+          if git grep -nIE '(ghp_[A-Za-z0-9]{36}|AKIA[0-9A-Z]{16}|sk-(proj-)?[A-Za-z0-9_-]{20,}|BEGIN [A-Z ]*PRIVATE KEY)' -- . ':!*_test.go'; then
+            echo "a credential shape was committed outside the tests"; exit 1
+          fi
