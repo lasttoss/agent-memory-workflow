@@ -43,3 +43,14 @@ Slice one: the redactor and its tests. The rest of the repository — the compos
 server, the `_rules/` and handoff templates, and the screenshot of a session reading back what an earlier
 session wrote — is next. `upstream` is MIT-licensed and is not vendored here; see `docs/credits.md` when it
 lands.
+
+## The write path as a picture
+
+`docs/diagrams/redaction-on-the-write-path.html` draws where the redactor sits and why it sits there:
+before the page is stored, because by the time it is stored it has been read by a session, mirrored into a
+wiki, and maybe pushed. It also carries the finding that cost a push: a test fixture with the exact shape of
+a credential is indistinguishable from one to a scanner, which is why the fixtures are assembled from pieces
+at run time.
+
+`docs/diagrams/redaction-on-the-write-path.mmd` is the Mermaid version; `make diagram` exports a PNG if a
+browser is present.

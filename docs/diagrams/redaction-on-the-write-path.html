@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>Redaction on the write path, not after the leak</title>
+<style>
+  :root { --ink:#151412; --paper:#f7f4ee; --rule:#cfc7b8; --red:#b3261e; --green:#1a6b3c; --amber:#8a5a00; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--paper); color:var(--ink);
+         font:16px/1.5 "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif; }
+  .sheet { max-width:1080px; margin:0 auto; padding:56px 40px 72px; }
+  .kicker { font:600 12px/1 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing:.14em;
+            text-transform:uppercase; color:var(--amber); }
+  h1 { font-size:38px; line-height:1.15; margin:.35em 0 .2em; letter-spacing:-.01em; }
+  .dek { font-size:19px; color:#463f36; max-width:76ch; margin:0 0 8px; }
+  .meta { font:12px/1.6 ui-monospace, Menlo, monospace; color:#6b6357; border-top:1px solid var(--rule);
+          padding-top:10px; margin-top:22px; }
+  svg { display:block; width:100%; height:auto; margin:34px 0 0; }
+  .pairs { display:grid; grid-template-columns:1fr 1fr 1fr; gap:22px; margin-top:34px; }
+  .card { border-left:4px solid var(--ink); padding:14px 0 14px 18px; background:#fffdf8; }
+  .card b { display:block; font-size:12px; letter-spacing:.12em; text-transform:uppercase; margin-bottom:6px; }
+  .card p { margin:0; font-size:16px; } .card p + p { margin-top:7px; }
+  footer { margin-top:38px; font:12px/1.7 ui-monospace, Menlo, monospace; color:#6b6357;
+           border-top:1px solid var(--rule); padding-top:12px; }
+  text { font-family:"Iowan Old Style", Palatino, Georgia, serif; }
+  .mono { font-family:ui-monospace, Menlo, monospace; }
+</style>
+<div class="sheet">
+  <div class="kicker">Workflow · agent-memory-workflow</div>
+  <h1>Redaction on the write path, not after the leak</h1>
+  <p class="dek">The failure is specific: an agent finishes a debugging session, writes a memory page, and
+    the page contains the environment variable it was reading. That page is searched by every future
+    session, mirrored into a wiki, and in the bad case pushed to a public repository — so the redactor runs
+    before the page is stored, not after somebody notices.</p>
+  <div class="meta">8 shapes recognised · the report carries kind and length and never the value ·
+    idempotent, because a page is rewritten</div>
+
+  <svg viewBox="0 0 1040 470" role="img" aria-label="A session's memory write goes through the redactor, which stores safe text and reports what it removed by kind and length only">
+    <defs>
+      <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0 0 L10 5 L0 10 z" fill="#151412"/></marker>
+      <marker id="ag" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0 0 L10 5 L0 10 z" fill="#1a6b3c"/></marker>
+      <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0 0 L10 5 L0 10 z" fill="#b3261e"/></marker>
+    </defs>
+
+    <rect x="20" y="46" width="210" height="112" rx="4" fill="#fffdf8" stroke="#151412"/>
+    <text x="34" y="72" font-size="14" font-weight="600">a session works</text>
+    <text x="34" y="94" font-size="12" class="mono">debugging, fixing,</text>
+    <text x="34" y="112" font-size="12" class="mono">reading env, running</text>
+    <text x="34" y="130" font-size="12" class="mono">curl with a token</text>
+    <text x="34" y="150" font-size="12" fill="#6b6357">then it remembers something</text>
+
+    <path d="M230 102 L300 102" stroke="#151412" stroke-width="2" marker-end="url(#a)"/>
+    <text x="234" y="92" font-size="11" class="mono" fill="#6b6357">wants to</text>
+    <text x="234" y="122" font-size="11" class="mono" fill="#6b6357">write a page</text>
+
+    <rect x="300" y="34" width="260" height="136" rx="4" fill="#eef5ef" stroke="#1a6b3c" stroke-width="2"/>
+    <text x="314" y="60" font-size="14" font-weight="600" fill="#1a6b3c">redact.Redact</text>
+    <text x="314" y="82" font-size="12" class="mono">the write path</text>
+    <text x="314" y="104" font-size="12" class="mono">8 shapes: keys, tokens,</text>
+    <text x="314" y="122" font-size="12" class="mono">JWTs, URIs, assignments</text>
+    <text x="314" y="144" font-size="12" class="mono" fill="#8a5a00">not on words: on shapes</text>
+    <text x="314" y="162" font-size="11" class="mono" fill="#6b6357">prose about tokens is left alone</text>
+
+    <path d="M560 82 L640 82" stroke="#1a6b3c" stroke-width="2" marker-end="url(#ag)"/>
+    <text x="564" y="74" font-size="11" class="mono" fill="#1a6b3c">safe text</text>
+    <path d="M560 146 L640 146" stroke="#b3261e" stroke-width="2" marker-end="url(#ar)"/>
+    <text x="564" y="140" font-size="11" class="mono" fill="#b3261e">what it took out</text>
+    <text x="564" y="164" font-size="11" class="mono" fill="#6b6357">kind + length, never the value</text>
+
+    <rect x="640" y="46" width="180" height="76" rx="4" fill="#fffdf8" stroke="#151412"/>
+    <text x="654" y="72" font-size="13" font-weight="600">the page</text>
+    <text x="654" y="94" font-size="11" class="mono">"…the token was</text>
+    <text x="654" y="110" font-size="11" class="mono">[redacted:github-token]"</text>
+
+    <rect x="640" y="134" width="180" height="76" rx="4" fill="#fdeeed" stroke="#b3261e"/>
+    <text x="654" y="160" font-size="13" font-weight="600" fill="#b3261e">a human</text>
+    <text x="654" y="182" font-size="11" class="mono">rotate that credential,</text>
+    <text x="654" y="198" font-size="11" class="mono">then fix the cause</text>
+
+    <path d="M730 122 L730 134" stroke="#151412" stroke-width="2" marker-end="url(#a)"/>
+    <path d="M820 84 L900 84 L900 250 L820 250" stroke="#151412" stroke-width="2" marker-end="url(#a)"/>
+    <text x="826" y="220" font-size="12" class="mono">a later session</text>
+    <text x="826" y="240" font-size="11" class="mono">searches and reads it</text>
+
+    <rect x="20" y="196" width="760" height="80" rx="4" fill="#fffdf8" stroke="#cfc7b8"/>
+    <text x="36" y="220" font-size="12" class="mono" fill="#6b6357">WHY HERE, AND NOT IN A CLEANUP JOB</text>
+    <text x="36" y="244" font-size="13">By the time a page is stored it has been read by a session, mirrored into a wiki, and maybe</text>
+    <text x="36" y="264" font-size="13">pushed. A secret that reached memory has already leaked: the value is gone from the page, and</text>
+    <text x="36" y="282" font-size="13" fill="#b3261e">the finding is what tells a person that a rotation is owed.</text>
+
+    <rect x="20" y="298" width="1000" height="90" rx="4" fill="#fdeeed" stroke="#b3261e"/>
+    <text x="36" y="322" font-size="13" class="mono" fill="#b3261e">THE FIXTURES ARE THE HARD PART — AND THE FIRST PUSH PROVED IT</text>
+    <text x="36" y="346" font-size="13">The first push of this repository was refused by the host's secret scanning: a test fixture with the</text>
+    <text x="36" y="366" font-size="13">exact shape of a credential is indistinguishable from one, and that is the scanner's job. The values</text>
+    <text x="36" y="384" font-size="13">are now assembled from pieces at run time, so the test keeps the shape and the scanner judges nothing.</text>
+
+    <rect x="20" y="406" width="1000" height="44" rx="4" fill="#fffdf8" stroke="#cfc7b8"/>
+    <text x="36" y="424" font-size="13" class="mono"><tspan fill="#1a6b3c">never the value</tspan> · <tspan fill="#1a6b3c">idempotent</tspan> · <tspan fill="#1a6b3c">the specific rule wins</tspan> · <tspan fill="#1a6b3c">short values and &lt;placeholders&gt; untouched</tspan></text>
+    <text x="36" y="442" font-size="12" class="mono" fill="#6b6357">four properties, each one asserted by a test, and three of them were bugs the tests found</text>
+  </svg>
+
+  <div class="pairs">
+    <div class="card">
+      <b>Why kind, not value</b>
+      <p>A report that quotes the secret is a second copy of the secret in a second place. Kind and length
+        are enough to know that a rotation is owed, and nothing in the report is worth stealing.</p>
+    </div>
+    <div class="card">
+      <b>Why idempotent</b>
+      <p>A memory page is re-read, re-summarised and written again. The first version redacted its own
+        marker on the second pass; the tests caught it, and now the marker is a shape the rules ignore.</p>
+    </div>
+    <div class="card">
+      <b>Why the false positives matter</b>
+      <p>A redactor that mangles the sentence "the token is required" or an example reading
+        <span class="mono">API_KEY=changeme</span> gets switched off, and then nothing is redacted at all.</p>
+    </div>
+  </div>
+
+  <footer>
+    Sources: docs/diagrams/redaction-on-the-write-path.mmd for the Mermaid version, redact.go for the rules,
+    redact_test.go for the four properties. The rest of this repository — the compose stack and the handoff
+    templates — is still to come, and this picture will grow with it.
+  </footer>
+</div>
+</html>
