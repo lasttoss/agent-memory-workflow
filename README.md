@@ -54,3 +54,19 @@ at run time.
 
 `docs/diagrams/redaction-on-the-write-path.mmd` is the Mermaid version; `make diagram` exports a PNG if a
 browser is present.
+
+## The workflow, not just the codec
+
+`redact` is one component. The rest of this repository is how a session behaves around a memory server, and
+it is written down because the failure mode is not a crash:
+
+| File | What it decides |
+|---|---|
+| `_rules/memory-first.md` | Search memory before acting, rate every hit, write down what would have saved you time |
+| `templates/handoff.md` | What a handoff contains, including the section that stops the next session repeating a failed approach |
+| `templates/stop-verify.md` | The claims to check before saying a task is done — and the two ways it is usually skipped |
+| `skills/loop-fix-until-clean/SKILL.md` | Done-condition, iteration ceiling, maker/checker split… and the two failure modes seen in practice |
+| `docs/credits.md` | The upstream project is not mine and is not vendored; what is deliberately absent from this repository |
+
+The last one is worth reading first: there are no credentials and no dotfiles here, in the repository or in
+its history, and the reason is written down.
