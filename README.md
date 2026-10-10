@@ -46,29 +46,18 @@ lands.
 
 ## The write path as a picture
 
-```mermaid
-%% Source for docs/diagrams/redaction-on-the-write-path.html
-%% Where the redactor sits, and why it sits there: before the page is stored, not after it is published.
-flowchart LR
-  S1["a session works"] --> W["an agent wants to remember something"]
-  W --> R{"redact.Redact<br/>on the WRITE path"}
-  R -->|"finding: kind + length<br/>never the value"| A["a human rotates the credential"]
-  R -->|"safe text with<br/>[redacted:kind] markers"| P[("memory page<br/>stored")]
-  P --> Q["a later session searches<br/>and reads it"]
-  Q -.->|"a secret that reached memory<br/>has already leaked"| R
-  classDef gate fill:#eef5ef,stroke:#1a6b3c,stroke-width:2px;
-  class R gate;
-```
+![A session's memory write goes through the redactor, which stores safe text and reports what it removed by kind and length only](docs/figures/redaction-on-the-write-path.png)
 
+**Figure 1.** Redaction on the write path, not after the leak
 
-`docs/diagrams/redaction-on-the-write-path.html` draws where the redactor sits and why it sits there:
+`docs/figures/redaction-on-the-write-path.html` draws where the redactor sits and why it sits there:
 before the page is stored, because by the time it is stored it has been read by a session, mirrored into a
 wiki, and maybe pushed. It also carries the finding that cost a push: a test fixture with the exact shape of
 a credential is indistinguishable from one to a scanner, which is why the fixtures are assembled from pieces
 at run time.
 
-`docs/diagrams/redaction-on-the-write-path.mmd` is the Mermaid version; `make diagram` exports a PNG if a
-browser is present.
+The figure is embedded above as a PNG. `docs/figures/redaction-on-the-write-path.html` is the source it
+is exported from, and `make diagram` re-exports it when a browser is available.
 
 ## The workflow, not just the codec
 
@@ -85,3 +74,17 @@ it is written down because the failure mode is not a crash:
 
 The last one is worth reading first: there are no credentials and no dotfiles here, in the repository or in
 its history, and the reason is written down.
+
+## Repository standard
+
+Six items, applied where they mean something rather than everywhere. The exclusions are the point of
+the table: an item that cannot be honest in a repository of this kind is left out and said so.
+
+| Item | Here |
+|---|---|
+| `docker-compose.yml` | not applicable - a workflow and a redactor, not a service; there is nothing to deploy |
+| `Dockerfile` | not applicable - same reason: no long-running process |
+| Helm chart | not applicable - same reason |
+| Diagram | ✓ `docs/figures/redaction-on-the-write-path.html` plus the exported PNG the README embeds |
+| Tests, run in CI | ✓ no credential shape in the tree |
+| CI + `Makefile` | ✓ `.github/workflows/ci.yml` and `Makefile` |
