@@ -1,5 +1,7 @@
 # agent-memory-workflow
 
+[![ci](https://github.com/lasttoss/agent-memory-workflow/actions/workflows/ci.yml/badge.svg)](https://github.com/lasttoss/agent-memory-workflow/actions/workflows/ci.yml)
+
 How I run a multi-session agent memory system: the rules a session starts with, the handoff one session
 leaves for the next, and the redactor that stops a credential from being written into memory in the first
 place.
